@@ -5,11 +5,14 @@
 const SUPABASE_URL_KEY = 'estatia-supabase-url';
 const SUPABASE_ANON_KEY = 'estatia-supabase-anon-key';
 
+const DEFAULT_SUPABASE_URL = 'https://pptlzbklfpghsvdpysmc.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY = 'sb_publishable_F0F0d2o59vuJOKGPPDZ64A_68d5PoX7';
+
 let supabaseInstance = null;
 
 export function getSupabaseCredentials() {
-  const url = localStorage.getItem(SUPABASE_URL_KEY) || (typeof process !== 'undefined' && process.env ? process.env.VITE_SUPABASE_URL : '') || '';
-  const key = localStorage.getItem(SUPABASE_ANON_KEY) || (typeof process !== 'undefined' && process.env ? process.env.VITE_SUPABASE_ANON_KEY : '') || '';
+  const url = localStorage.getItem(SUPABASE_URL_KEY) || (typeof process !== 'undefined' && process.env ? process.env.VITE_SUPABASE_URL : '') || DEFAULT_SUPABASE_URL;
+  const key = localStorage.getItem(SUPABASE_ANON_KEY) || (typeof process !== 'undefined' && process.env ? process.env.VITE_SUPABASE_ANON_KEY : '') || DEFAULT_SUPABASE_ANON_KEY;
   return { url, key };
 }
 

@@ -14,7 +14,6 @@ export function initAuth() {
   const gateForm = document.getElementById('gateForm');
   const gateEmailGroup = document.getElementById('gateEmailGroup');
   const gatePasswordGroup = document.getElementById('gatePasswordGroup');
-  const gateConfigGroup = document.getElementById('gateConfigGroup');
   const gateAlert = document.getElementById('gateAlert');
   const gateSubmitBtn = document.getElementById('gateSubmitBtn');
   const gateDemoBtn = document.getElementById('gateDemoBtn');
@@ -22,14 +21,13 @@ export function initAuth() {
   // Tabs
   const gateTabSignin = document.getElementById('gateTabSignin');
   const gateTabSignup = document.getElementById('gateTabSignup');
-  const gateTabConfig = document.getElementById('gateTabConfig');
 
   // User Header & Dropdown Elements
   const userChip = document.getElementById('userChip');
   const userDropdown = document.getElementById('userDropdown');
   const dropdownLogout = document.getElementById('dropdownLogout');
 
-  let gateMode = 'signin'; // 'signin', 'signup', 'config'
+  let gateMode = 'signin'; // 'signin', 'signup'
 
   // User Chip Dropdown Toggle
   if (userChip && userDropdown) {
@@ -50,35 +48,22 @@ export function initAuth() {
   // Gate Tab Switches
   if (gateTabSignin) gateTabSignin.addEventListener('click', () => setGateMode('signin'));
   if (gateTabSignup) gateTabSignup.addEventListener('click', () => setGateMode('signup'));
-  if (gateTabConfig) gateTabConfig.addEventListener('click', () => setGateMode('config'));
 
   function setGateMode(mode) {
     gateMode = mode;
     hideGateAlert();
-    [gateTabSignin, gateTabSignup, gateTabConfig].forEach(t => t && t.classList.remove('active'));
+    [gateTabSignin, gateTabSignup].forEach(t => t && t.classList.remove('active'));
 
-    if (mode === 'config') {
-      if (gateTabConfig) gateTabConfig.classList.add('active');
-      gateSubmitBtn.textContent = 'Save Supabase Settings';
-      gateConfigGroup.style.display = 'block';
-      gateEmailGroup.style.display = 'none';
-      gatePasswordGroup.style.display = 'none';
-
-      const { url, key } = getSupabaseCredentials();
-      document.getElementById('gateSbUrl').value = url;
-      document.getElementById('gateSbKey').value = key;
-    } else if (mode === 'signup') {
+    if (mode === 'signup') {
       if (gateTabSignup) gateTabSignup.classList.add('active');
       gateSubmitBtn.textContent = 'Create Account';
-      gateConfigGroup.style.display = 'none';
-      gateEmailGroup.style.display = 'block';
-      gatePasswordGroup.style.display = 'block';
+      if (gateEmailGroup) gateEmailGroup.style.display = 'block';
+      if (gatePasswordGroup) gatePasswordGroup.style.display = 'block';
     } else {
       if (gateTabSignin) gateTabSignin.classList.add('active');
       gateSubmitBtn.textContent = 'Sign In';
-      gateConfigGroup.style.display = 'none';
-      gateEmailGroup.style.display = 'block';
-      gatePasswordGroup.style.display = 'block';
+      if (gateEmailGroup) gateEmailGroup.style.display = 'block';
+      if (gatePasswordGroup) gatePasswordGroup.style.display = 'block';
     }
   }
 
@@ -100,25 +85,12 @@ export function initAuth() {
       e.preventDefault();
       hideGateAlert();
 
-      if (gateMode === 'config') {
-        const url = document.getElementById('gateSbUrl').value;
-        const key = document.getElementById('gateSbKey').value;
-        if (!url || !key) {
-          showGateAlert('Please enter both Supabase URL and Anon Key.', 'error');
-          return;
-        }
-        saveSupabaseCredentials(url, key);
-        showGateAlert('Supabase credentials saved successfully!', 'success');
-        setTimeout(() => setGateMode('signin'), 1200);
-        return;
-      }
-
       const email = document.getElementById('gateEmail').value;
       const password = document.getElementById('gatePassword').value;
 
       const client = getSupabaseClient();
       if (!client) {
-        showGateAlert('Supabase client not configured yet. Click "Supabase Config" tab to enter credentials.', 'error');
+        showGateAlert('Supabase client connection failed.', 'error');
         return;
       }
 

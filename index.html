@@ -36,7 +36,6 @@
     <div class="auth-gate-tabs">
       <button class="auth-gate-tab active" id="gateTabSignin">Sign In</button>
       <button class="auth-gate-tab" id="gateTabSignup">Sign Up</button>
-      <button class="auth-gate-tab" id="gateTabConfig">Supabase Config</button>
     </div>
 
     <div id="gateAlert" class="auth-alert"></div>
@@ -50,17 +49,6 @@
       <div id="gatePasswordGroup">
         <label class="auth-label" for="gatePassword">Password</label>
         <input type="password" id="gatePassword" class="auth-gate-input" placeholder="••••••••" required>
-      </div>
-
-      <div id="gateConfigGroup" style="display: none;">
-        <div style="margin-bottom: 12px;">
-          <label class="auth-label" for="gateSbUrl">Supabase Project URL</label>
-          <input type="url" id="gateSbUrl" class="auth-gate-input" placeholder="https://your-project.supabase.co">
-        </div>
-        <div>
-          <label class="auth-label" for="gateSbKey">Supabase Anon Key</label>
-          <input type="text" id="gateSbKey" class="auth-gate-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6...">
-        </div>
       </div>
 
       <button type="submit" class="auth-gate-btn" id="gateSubmitBtn">Sign In</button>
