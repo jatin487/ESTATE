@@ -1,0 +1,25 @@
+{
+  "name": "estatia-sales-intelligence",
+  "version": "1.0.0",
+  "description": "Estatia Real Estate Sales Intelligence Dashboard - High-performance property analytics platform",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx -y serve .",
+    "dev": "npx -y vite",
+    "build": "npx -y vite build",
+    "preview": "npx -y vite preview"
+  },
+  "keywords": [
+    "real-estate",
+    "dashboard",
+    "sales-intelligence",
+    "analytics",
+    "chartjs"
+  ],
+  "author": "Estatia Development Team",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.4",
+    "vite": "^6.0.0"
+  }
+}

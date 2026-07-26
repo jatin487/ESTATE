@@ -1,0 +1,257 @@
+/* ============ FULL SCREEN AUTH LANDING GATE ============ */
+.auth-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background:
+    radial-gradient(1200px 700px at 80% -10%, rgba(198, 161, 67, 0.12), transparent),
+    radial-gradient(900px 600px at -10% 30%, rgba(19, 84, 61, 0.14), transparent),
+    linear-gradient(180deg, var(--green-950), var(--green-900) 50%, var(--green-950));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 1;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.auth-gate.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.98);
+}
+
+.auth-gate-card {
+  background: rgba(13, 42, 32, 0.75);
+  backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(201, 162, 39, 0.22);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7);
+  width: 100%;
+  max-width: 460px;
+  padding: 36px 32px 28px;
+  color: #EAF4EE;
+  animation: authGateAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes authGateAppear {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-gate-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-gate-logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-deep));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px -6px rgba(198, 161, 67, 0.6);
+  margin-bottom: 12px;
+}
+
+.auth-gate-logo svg {
+  width: 28px;
+  height: 28px;
+}
+
+.auth-gate-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: #fff;
+}
+
+.auth-gate-sub {
+  font-size: 13px;
+  color: #9FBBAE;
+  margin-top: 4px;
+}
+
+.auth-gate-tabs {
+  display: flex;
+  background: rgba(6, 24, 15, 0.5);
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(201, 162, 39, 0.12);
+}
+
+.auth-gate-tab {
+  flex: 1;
+  padding: 9px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #8FAE9E;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.auth-gate-tab.active {
+  color: #F3E4B8;
+  background: rgba(198, 161, 67, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.auth-gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-gate-input {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 11px;
+  border: 1px solid rgba(201, 162, 39, 0.2);
+  background: rgba(6, 24, 15, 0.6);
+  font-size: 13.5px;
+  color: #fff;
+  transition: border-color 0.2s;
+}
+
+.auth-gate-input::placeholder {
+  color: #6B8A7C;
+}
+
+.auth-gate-input:focus {
+  border-color: var(--gold);
+  outline: none;
+}
+
+.auth-gate-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 11px;
+  border: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold-deep));
+  color: var(--green-950);
+  box-shadow: 0 8px 20px -6px rgba(198, 161, 67, 0.7);
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  margin-top: 4px;
+}
+
+.auth-gate-btn:hover {
+  opacity: 0.94;
+  transform: translateY(-1px);
+}
+
+.auth-gate-demo-btn {
+  width: 100%;
+  padding: 11px;
+  border-radius: 11px;
+  border: 1px solid rgba(201, 162, 39, 0.3);
+  background: transparent;
+  color: #C9DED2;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.auth-gate-demo-btn:hover {
+  border-color: var(--gold);
+  color: #fff;
+  background: rgba(198, 161, 67, 0.08);
+}
+
+.auth-gate-footer {
+  margin-top: 18px;
+  text-align: center;
+  font-size: 11.5px;
+  color: #6B8A7C;
+}
+
+.dashboard-shell {
+  transition: opacity 0.4s ease;
+}
+
+.dashboard-shell.hidden {
+  display: none;
+}
+
+/* User Dropdown Menu */
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  z-index: 80;
+  display: none;
+}
+
+.user-dropdown.show {
+  display: block;
+}
+
+.user-dropdown-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-soft);
+}
+
+.user-dropdown-email {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-900);
+  word-break: break-all;
+}
+
+.user-dropdown-status {
+  font-size: 11px;
+  color: var(--gold-deep);
+  margin-top: 2px;
+}
+
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  font-size: 13px;
+  color: var(--text-600);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+}
+
+.user-dropdown-item:hover {
+  background: rgba(198, 161, 67, 0.1);
+  color: var(--text-900);
+}
+
+.user-dropdown-item svg {
+  width: 16px;
+  height: 16px;
+}
+
+.user-dropdown-divider {
+  height: 1px;
+  background: var(--border);
+}

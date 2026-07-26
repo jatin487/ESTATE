@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Estatia Sales Intelligence Dashboard — Real-time property analytics, revenue forecasting, agent leaderboards, customer insights and interactive property mapping.">
+  <title>Estatia | Sales Intelligence Dashboard</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+  
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Modular Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ================= FULL SCREEN AUTHENTICATION GATE ================= -->
+<div class="auth-gate" id="authGate">
+  <div class="auth-gate-card">
+    <div class="auth-gate-brand">
+      <div class="auth-gate-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0C201A" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+      </div>
+      <h1 class="auth-gate-title">Estatia</h1>
+      <p class="auth-gate-sub">Sales Intelligence Dashboard</p>
+    </div>
+
+    <div class="auth-gate-tabs">
+      <button class="auth-gate-tab active" id="gateTabSignin">Sign In</button>
+      <button class="auth-gate-tab" id="gateTabSignup">Sign Up</button>
+      <button class="auth-gate-tab" id="gateTabConfig">Supabase Config</button>
+    </div>
+
+    <div id="gateAlert" class="auth-alert"></div>
+
+    <form id="gateForm" class="auth-gate-form">
+      <div id="gateEmailGroup">
+        <label class="auth-label" for="gateEmail">Email Address</label>
+        <input type="email" id="gateEmail" class="auth-gate-input" placeholder="agent@estatia.com" required>
+      </div>
+
+      <div id="gatePasswordGroup">
+        <label class="auth-label" for="gatePassword">Password</label>
+        <input type="password" id="gatePassword" class="auth-gate-input" placeholder="••••••••" required>
+      </div>
+
+      <div id="gateConfigGroup" style="display: none;">
+        <div style="margin-bottom: 12px;">
+          <label class="auth-label" for="gateSbUrl">Supabase Project URL</label>
+          <input type="url" id="gateSbUrl" class="auth-gate-input" placeholder="https://your-project.supabase.co">
+        </div>
+        <div>
+          <label class="auth-label" for="gateSbKey">Supabase Anon Key</label>
+          <input type="text" id="gateSbKey" class="auth-gate-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6...">
+        </div>
+      </div>
+
+      <button type="submit" class="auth-gate-btn" id="gateSubmitBtn">Sign In</button>
+    </form>
+
+    <button type="button" class="auth-gate-demo-btn" id="gateDemoBtn">🚀 Continue in Demo Mode</button>
+
+    <div class="auth-gate-footer">
+      Protected by Supabase Authentication · © 2026 Estatia
+    </div>
+  </div>
+</div>
+
+<!-- ================= DASHBOARD SHELL (Hidden until authenticated) ================= -->
+<div class="shell dashboard-shell hidden" id="dashboardShell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0C201A" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Estatia</div>
+        <div class="brand-sub">Sales Intelligence</div>
+      </div>
+    </div>
+
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-item active" data-target="#overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
+    <a class="nav-item" data-target="#analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19h16"/><path d="M7 19V9"/><path d="M12 19V5"/><path d="M17 19v-7"/></svg>Sales Analytics</a>
+    <a class="nav-item" data-target="#leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg>Lead Management</a>
+    <a class="nav-item" data-target="#inventory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-8h6v8"/></svg>Inventory</a>
+
+    <div class="nav-group-label">Performance</div>
+    <a class="nav-item" data-target="#agents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c1-3.6 3.6-5.5 5.5-5.5s4.5 1.9 5.5 5.5"/><circle cx="17.5" cy="8.5" r="2.4"/><path d="M15.5 14.2c2.5.3 4.2 2 5 5.8"/></svg>Agent Performance</a>
+    <a class="nav-item" data-target="#revenue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 9.5a2.5 2.5 0 0 1 2.5-1.5h1a2.3 2.3 0 0 1 0 4.6h-1a2.3 2.3 0 0 0 0 4.6h1a2.5 2.5 0 0 0 2.5-1.5"/></svg>Revenue</a>
+    <a class="nav-item" data-target="#payments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2.5" y="5" width="19" height="14" rx="2.4"/><path d="M2.5 10h19"/><path d="M6 15h4"/></svg>Payment Tracker</a>
+    <a class="nav-item" data-target="#customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.4-4.4 4.3-6.4 7.5-6.4s6.1 2 7.5 6.4"/></svg>Customer Analytics</a>
+
+    <div class="nav-group-label">Explore</div>
+    <a class="nav-item" data-target="#map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-6-2V6l6 2 6-2 6 2v14l-6-2-6 2z"/><path d="M9 4v16M15 6v16"/></svg>Property Map</a>
+    <a class="nav-item" data-target="#activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>Recent Activity</a>
+    <a class="nav-item" data-target="#reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2.5h9l4.5 4.5V21a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1z"/><path d="M9 13h6M9 17h6M9 9h2"/></svg>Reports</a>
+
+    <div class="sidebar-foot">
+      <div class="agent-mini">
+        <div class="avatar-ring" id="sidebarAvatar">RV</div>
+        <div>
+          <div class="agent-mini-name" id="sidebarName">Rhea Varma</div>
+          <div class="agent-mini-role" id="sidebarRole">Head of Sales</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="globalSearch" class="search-input" type="text" placeholder="Search property, client, agent, booking ID, lead ID…">
+        <div id="searchResults" class="search-results"></div>
+      </div>
+      <div class="topbar-spacer"></div>
+      <button class="icon-btn" id="notifBtn" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 6-2.5 7.5-2.5 7.5h17S18 14 18 8z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+        <span class="dot-badge"></span>
+      </button>
+      <div id="notifPanel" class="notif-panel"></div>
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle theme">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+      </button>
+      
+      <!-- USER CHIP & DROPDOWN -->
+      <div style="position: relative;">
+        <div class="user-chip" id="userChip" style="cursor: pointer;" title="Click for User Menu">
+          <div class="avatar-ring">RV</div>
+          <div>
+            <div class="un">Rhea Varma</div>
+            <div class="ur">Head of Sales</div>
+          </div>
+        </div>
+
+        <div class="user-dropdown" id="userDropdown">
+          <div class="user-dropdown-header">
+            <div class="user-dropdown-email" id="dropdownEmail">Not Signed In</div>
+            <div class="user-dropdown-status" id="dropdownStatus">Demo Mode</div>
+          </div>
+          <button class="user-dropdown-item" id="dropdownLogout" style="color: var(--red);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign Out / Lock Dashboard
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- TICKER -->
+    <div class="ticker-wrap">
+      <div class="ticker-track" id="tickerTrack"></div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filterbar">
+      <span class="filter-label">Smart Filters</span>
+      <select id="fAgent"><option value="">All Agents</option></select>
+      <select id="fType"><option value="">All Property Types</option></select>
+      <select id="fCity"><option value="">All Locations</option></select>
+      <select id="fBudget">
+        <option value="">All Budgets</option>
+        <option value="0-100">Under ₹1 Cr</option>
+        <option value="100-300">₹1–3 Cr</option>
+        <option value="300-1000">₹3 Cr+</option>
+      </select>
+      <select id="fSource">
+        <option value="">All Lead Sources</option>
+        <option>Website</option><option>Instagram</option><option>Facebook</option><option>Google Ads</option>
+        <option>WhatsApp</option><option>Referral</option><option>Walk-in</option><option>Property Portals</option>
+      </select>
+      <select id="fPayStatus">
+        <option value="">All Payment Status</option>
+        <option>Paid</option><option>Pending</option><option>Overdue</option>
+      </select>
+      <input type="text" id="fDate" placeholder="Date range · e.g. Jul 1 – Jul 25">
+      <button class="btn-gold" id="applyFilters">Apply Filters</button>
+      <button class="btn-ghost" id="resetFilters">Reset</button>
+    </div>
+
+    <!-- OVERVIEW / KPI -->
+    <section class="section" id="overview">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Command Center</div>
+          <h1 class="section-title">Business Overview</h1>
+          <div class="section-desc">A real-time snapshot of sales value, revenue, pipeline health and inventory across every project.</div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="kpiGrid"></div>
+    </section>
+
+    <!-- SALES ANALYTICS -->
+    <section class="section" id="analytics">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Trends &amp; Patterns</div>
+          <h2 class="section-title">Sales Analytics</h2>
+          <div class="section-desc">Performance trends across time, property type, geography and agents.</div>
+        </div>
+      </div>
+      <div class="chart-grid">
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Monthly Sales Trend</div><div class="chart-tag">FY 25–26</div></div><div class="chart-canvas-wrap"><canvas id="chSalesTrend"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Revenue Trend</div><div class="chart-tag">₹ Cr</div></div><div class="chart-canvas-wrap"><canvas id="chRevTrend"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Sales by Property Type</div><div class="chart-tag">Share</div></div><div class="chart-canvas-wrap"><canvas id="chByType"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Sales by City</div><div class="chart-tag">₹ Cr</div></div><div class="chart-canvas-wrap"><canvas id="chByCity"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Sales by Agent</div><div class="chart-tag">Top 6</div></div><div class="chart-canvas-wrap"><canvas id="chByAgent"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Average Property Price</div><div class="chart-tag">₹/sq.ft</div></div><div class="chart-canvas-wrap"><canvas id="chAvgPrice"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Quarterly Revenue Growth</div><div class="chart-tag">QoQ %</div></div><div class="chart-canvas-wrap"><canvas id="chQoQ"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Year‑over‑Year Comparison</div><div class="chart-tag">FY24‑25 vs FY25‑26</div></div><div class="chart-canvas-wrap"><canvas id="chYoY"></canvas></div></div>
+      </div>
+    </section>
+
+    <!-- LEAD MANAGEMENT -->
+    <section class="section" id="leads">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Pipeline Health</div>
+          <h2 class="section-title">Lead Management</h2>
+          <div class="section-desc">This quarter's pipeline from first touch to closed deal.</div>
+        </div>
+      </div>
+      <div class="stat-row" id="leadStats"></div>
+      <div class="funnel-wrap">
+        <div class="card funnel-card">
+          <div class="chart-title" style="margin-bottom:16px;">Conversion Funnel</div>
+          <div id="funnelBody"></div>
+        </div>
+        <div class="card" style="padding:24px 26px;">
+          <div class="chart-title" style="margin-bottom:14px;">Follow-ups &amp; Site Visits</div>
+          <div id="followBody" style="display:grid; gap:12px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INVENTORY -->
+    <section class="section" id="inventory">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Portfolio</div>
+          <h2 class="section-title">Property Inventory</h2>
+          <div class="section-desc">Live status of every unit across residential, commercial and luxury projects.</div>
+        </div>
+      </div>
+      <div class="inv-grid" id="invGrid" style="margin-bottom:18px;"></div>
+      <div class="chart-grid">
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Inventory Distribution</div></div><div class="chart-canvas-wrap"><canvas id="chInvDist"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Property Category Breakdown</div></div><div class="chart-canvas-wrap"><canvas id="chInvCat"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Price Range Distribution</div></div><div class="chart-canvas-wrap"><canvas id="chPriceRange"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Availability Status</div></div><div class="chart-canvas-wrap"><canvas id="chAvailability"></canvas></div></div>
+      </div>
+    </section>
+
+    <!-- AGENT PERFORMANCE -->
+    <section class="section" id="agents">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Leaderboard</div>
+          <h2 class="section-title">Agent Performance</h2>
+          <div class="section-desc">Ranked by revenue generated this quarter. Click any column to sort.</div>
+        </div>
+        <div class="export-row">
+          <button class="export-btn" onclick="exportCSV('agents')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>Export CSV
+          </button>
+        </div>
+      </div>
+      <div class="card table-card">
+        <table id="agentTable">
+          <thead>
+            <tr>
+              <th data-k="name">Agent</th>
+              <th data-k="leads">Leads Assigned</th>
+              <th data-k="deals">Deals Closed</th>
+              <th data-k="revenue">Revenue Generated</th>
+              <th data-k="commission">Commission</th>
+              <th data-k="conv">Conversion</th>
+              <th data-k="rating">Rating</th>
+              <th data-k="target">Monthly Target</th>
+            </tr>
+          </thead>
+          <tbody id="agentTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REVENUE -->
+    <section class="section" id="revenue">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Financials</div>
+          <h2 class="section-title">Revenue Dashboard</h2>
+          <div class="section-desc">Gross vs. net revenue, forecasted inflows and margin health.</div>
+        </div>
+      </div>
+      <div class="stat-row" id="revStats"></div>
+      <div class="chart-grid">
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Revenue by Month</div></div><div class="chart-canvas-wrap"><canvas id="chRevMonth"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Revenue by Agent</div></div><div class="chart-canvas-wrap"><canvas id="chRevAgent"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Revenue by Property Type</div></div><div class="chart-canvas-wrap"><canvas id="chRevType"></canvas></div></div>
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Revenue Forecast</div><div class="chart-tag">Next 6 mo.</div></div><div class="chart-canvas-wrap"><canvas id="chRevForecast"></canvas></div></div>
+      </div>
+    </section>
+
+    <!-- PAYMENTS -->
+    <section class="section" id="payments">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Collections</div>
+          <h2 class="section-title">Payment Tracker</h2>
+          <div class="section-desc">Booking amounts, EMIs and outstanding balances across active deals.</div>
+        </div>
+        <div class="export-row">
+          <button class="export-btn" onclick="exportCSV('payments')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>Export CSV
+          </button>
+        </div>
+      </div>
+      <div class="card table-card">
+        <table id="payTable">
+          <thead>
+            <tr>
+              <th data-k="client">Client</th>
+              <th data-k="property">Property</th>
+              <th data-k="booking">Booking Amt</th>
+              <th data-k="down">Down Payment</th>
+              <th data-k="installments">Installments</th>
+              <th data-k="pending">Pending Balance</th>
+              <th data-k="status">EMI / Status</th>
+            </tr>
+          </thead>
+          <tbody id="payTbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CUSTOMER ANALYTICS -->
+    <section class="section" id="customers">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Buyers</div>
+          <h2 class="section-title">Customer Analytics</h2>
+          <div class="section-desc">Who's buying, how they found us, and how satisfied they are.</div>
+        </div>
+      </div>
+      <div class="stat-row" id="custStats"></div>
+      <div class="two-col">
+        <div class="card chart-card"><div class="chart-head"><div class="chart-title">Lead Source Mix</div></div><div class="chart-canvas-wrap" style="height:260px;"><canvas id="chSources"></canvas></div></div>
+        <div class="source-grid" id="sourceGrid"></div>
+      </div>
+    </section>
+
+    <!-- MAP -->
+    <section class="section" id="map">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Geography</div>
+          <h2 class="section-title">Interactive Property Map</h2>
+          <div class="section-desc">Hover a pin for area stats. Filter by listing status below.</div>
+        </div>
+        <div class="export-row" id="mapFilterBtns"></div>
+      </div>
+      <div class="card map-card">
+        <div class="map-canvas" id="mapCanvas"><div class="map-blob"></div></div>
+        <div class="map-legend">
+          <div class="li"><span class="dot" style="background:var(--blue)"></span>Available</div>
+          <div class="li"><span class="dot" style="background:var(--red)"></span>Sold</div>
+          <div class="li"><span class="dot" style="background:var(--gold-deep)"></span>Premium Listings</div>
+          <div class="li"><span class="dot" style="background:#E4816A"></span>Hot Selling</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACTIVITY -->
+    <section class="section" id="activity">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Live Feed</div>
+          <h2 class="section-title">Recent Activities</h2>
+          <div class="section-desc">The latest movements across leads, visits, bookings and payments.</div>
+        </div>
+      </div>
+      <div class="card timeline" id="activityTimeline"></div>
+    </section>
+
+    <!-- REPORTS -->
+    <section class="section" id="reports">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Export</div>
+          <h2 class="section-title">Reports</h2>
+          <div class="section-desc">Generate a shareable report of current dashboard data.</div>
+        </div>
+      </div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));">
+        <div class="card kpi-card" style="text-align:center; padding:26px 18px;">
+          <div class="kpi-icon" style="margin:0 auto 12px;">📄</div>
+          <div style="font-weight:700; margin-bottom:4px;">PDF Report</div>
+          <div class="kpi-label" style="margin-bottom:14px;">Print-ready summary</div>
+          <button class="btn-gold" style="width:100%;" onclick="window.print()">Export PDF</button>
+        </div>
+        <div class="card kpi-card" style="text-align:center; padding:26px 18px;">
+          <div class="kpi-icon" style="margin:0 auto 12px;">📊</div>
+          <div style="font-weight:700; margin-bottom:4px;">Excel Workbook</div>
+          <div class="kpi-label" style="margin-bottom:14px;">Agent + payment data</div>
+          <button class="btn-gold" style="width:100%;" onclick="exportCSV('agents')">Export Excel (.csv)</button>
+        </div>
+        <div class="card kpi-card" style="text-align:center; padding:26px 18px;">
+          <div class="kpi-icon" style="margin:0 auto 12px;">🗂️</div>
+          <div style="font-weight:700; margin-bottom:4px;">Raw CSV</div>
+          <div class="kpi-label" style="margin-bottom:14px;">Payment ledger</div>
+          <button class="btn-gold" style="width:100%;" onclick="exportCSV('payments')">Export CSV</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="app-footer">Estatia Sales Intelligence · Demo data shown for illustration · © 2026</footer>
+  </main>
+</div>
+
+<!-- Main Module Script -->
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
