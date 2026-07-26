@@ -248,24 +248,36 @@ function renderActivityTimeline() {
 
 function setupNavigation() {
   const navItems = document.querySelectorAll('.nav-item');
+  const sections = document.querySelectorAll('.section');
+
+  // Hide all sections except the first one on initial load
+  if (sections.length > 0) {
+    sections.forEach((s, idx) => {
+      if (idx !== 0) s.style.display = 'none';
+      else s.style.display = 'block';
+    });
+  }
+
   navItems.forEach(item => {
     item.addEventListener('click', e => {
       e.preventDefault();
-      const target = document.querySelector(item.dataset.target);
+      const targetSelector = item.dataset.target;
+      const target = document.querySelector(targetSelector);
+      
       if (target) {
-        target.scrollIntoView({ behavior: 'smooth' });
+        // Hide all sections
+        sections.forEach(s => s.style.display = 'none');
+        
+        // Show target section
+        target.style.display = 'block';
+        
+        // Update active class on nav items
+        navItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
   });
-
-  const sections = document.querySelectorAll('.section');
-  if (sections.length > 0) {
-    window.addEventListener('scroll', () => {
-      let current = sections[0].id;
-      sections.forEach(s => {
-        if (window.scrollY >= s.offsetTop - 170) current = s.id;
-      });
-      navItems.forEach(i => i.classList.toggle('active', i.dataset.target === '#' + current));
-    }, { passive: true });
-  }
 }
