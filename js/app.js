@@ -11,6 +11,8 @@ import { initCharts, refreshChartColors } from './charts.js';
 import { initFilters, initGlobalSearch } from './filters.js';
 import { initMap } from './map.js';
 import { initAuth } from './auth.js';
+import { initRealtimeEngine } from './realtime.js';
+import { initDealerManagement, renderDealerOverviewCards, populateDealerDropdown } from './dealers.js';
 import './export.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,6 +23,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize Authentication & Supabase state
   initAuth();
+
+  // Initialize Real-time updates engine (clock, simulation loop, toasts)
+  initRealtimeEngine();
+
+  // Initialize Dealer & Property Management Hub
+  initDealerManagement({
+    onDealerAdded: () => refreshAppViews(),
+    onPropertyAdded: () => refreshAppViews()
+  });
+
+  // Render Mobile Drawer Navigation
+  setupMobileNavigation();
 
   // Render Notifications
   renderNotifications();
@@ -62,9 +76,41 @@ document.addEventListener('DOMContentLoaded', () => {
   initFilters();
   initGlobalSearch();
 
-  // Setup Sidebar Navigation Smooth Scroll & ScrollSpy
+  // Setup Sidebar Navigation Smooth Scroll & Section Toggling
   setupNavigation();
 });
+
+function refreshAppViews() {
+  renderKPIs();
+  renderInventory();
+  renderAgentLeaderboard();
+  renderDealerOverviewCards();
+  populateDealerDropdown();
+}
+
+/* ============================================================
+   MOBILE DRAWER NAVIGATION
+=============================================================*/
+function setupMobileNavigation() {
+  const mobileNavBtn = document.getElementById('mobileNavBtn');
+  const overlay = document.getElementById('mobileNavOverlay');
+  const shell = document.querySelector('.shell');
+
+  if (mobileNavBtn && shell) {
+    mobileNavBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      shell.classList.toggle('mobile-open');
+      if (overlay) overlay.classList.toggle('show');
+    });
+  }
+
+  if (overlay && shell) {
+    overlay.addEventListener('click', () => {
+      shell.classList.remove('mobile-open');
+      overlay.classList.remove('show');
+    });
+  }
+}
 
 /* ============================================================
    DOM RENDERERS
@@ -100,6 +146,7 @@ function renderTicker() {
 function renderKPIs() {
   const kpiGrid = document.getElementById('kpiGrid');
   if (!kpiGrid) return;
+  kpiGrid.innerHTML = '';
   kpis.forEach((k, idx) => {
     const card = document.createElement('div');
     card.className = 'card kpi-card reveal';
@@ -159,7 +206,8 @@ function renderAgentLeaderboard() {
     const rows = [...agents].sort((a, b) => (a[agentSort.k] > b[agentSort.k] ? 1 : -1) * agentSort.dir);
     tbody.innerHTML = rows.map(a => `
       <tr>
-        <td><div class="agent-cell"><div class="avatar-ring">${a.name.split(' ').map(n => n[0]).join('')}</div><div><div class="name">${a.name}</div><div class="sub">${a.role}</div></div></div></td>
+        <td><div class="agent-cell"><div class="avatar-ring">${a.name.split(' ').map(n => n[0]).join('')}</div><div><div class="name">${a.name}</div><div class="sub">${a.role} · ${a.city}</div></div></div></td>
+        <td><b style="color:var(--gold-deep); font-size:13.5px;">${a.propertiesCount || 0}</b> units</td>
         <td>${a.leads}</td>
         <td>${a.deals}</td>
         <td>${fmtCr(a.revenue)}</td>
@@ -240,7 +288,7 @@ function renderCustomerAnalytics() {
 function renderActivityTimeline() {
   const timeline = document.getElementById('activityTimeline');
   if (!timeline) return;
-  timeline.innerHTML = activities.map(a => `
+  timeline.innerHTML = activities.slice(0, 10).map(a => `
     <div class="tl-item"><div class="tl-dot" style="background:${a.bg};">${a.icon}</div>
       <div class="tl-row"><div><div class="tl-title">${a.t}</div><div class="tl-sub">${a.s}</div></div><div class="tl-time">${a.time}</div></div>
     </div>`).join('');
@@ -249,6 +297,8 @@ function renderActivityTimeline() {
 function setupNavigation() {
   const navItems = document.querySelectorAll('.nav-item');
   const sections = document.querySelectorAll('.section');
+  const shell = document.querySelector('.shell');
+  const overlay = document.getElementById('mobileNavOverlay');
 
   // Hide all sections except the first one on initial load
   if (sections.length > 0) {
@@ -274,6 +324,10 @@ function setupNavigation() {
         // Update active class on nav items
         navItems.forEach(i => i.classList.remove('active'));
         item.classList.add('active');
+
+        // Auto close mobile drawer
+        if (shell) shell.classList.remove('mobile-open');
+        if (overlay) overlay.classList.remove('show');
         
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
