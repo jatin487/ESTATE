@@ -99,7 +99,13 @@ export function initAuth() {
 
       try {
         if (gateMode === 'signup') {
-          const { data, error } = await client.auth.signUp({ email, password });
+          const { data, error } = await client.auth.signUp({ 
+            email, 
+            password,
+            options: {
+              emailRedirectTo: window.location.origin
+            }
+          });
           if (error) throw error;
           showGateAlert('Account created! Check your email to confirm or sign in now.', 'success');
         } else {
